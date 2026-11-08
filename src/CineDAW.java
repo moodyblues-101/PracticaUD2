@@ -3,6 +3,8 @@ import java.util.Scanner;
 
 /**
  * Programa CineDAW: taquilla de una sala de cine
+ * Permite ver el estado de la sala (butacas vacias o llenas), comprar entradas aplicando
+ * tarifas distintas por edad y por día de la semana, y consultar estadísticas de venta.
  * @author Joel C.G.
  */
 public class CineDAW {
@@ -10,6 +12,7 @@ public class CineDAW {
     // Declaramos constantes de la sala
     private static final int FILAS = 6;
     private static final int BUTACAS_POR_FILA = 8;
+    private static final int TOTAL_BUTACAS = FILAS * BUTACAS_POR_FILA;
     private static final int BUTACAS_ANTES_PASILLO = 4;
     private static final char PRIMERA_FILA = 'A';
     private static final char ULTIMA_FILA = (char) (PRIMERA_FILA + FILAS - 1);
@@ -41,7 +44,7 @@ public class CineDAW {
     // Constantes de formato y menú
     private static final int CENTIMOS_POR_EURO = 100;
     private static final int LIMITE_UN_DIGITO = 10;
-    private static final int PORCENTAJE_TOTAL = 100;
+    private static final double PORCENTAJE_TOTAL = 100.0;
     private static final int OPCION_NO_VALIDA = -1; // valor que devuelve el menú si se escribe un texto
 
     private static final String MENU = """
@@ -50,14 +53,13 @@ public class CineDAW {
             2. Comprar entrada
             3. Estadísticas
             0. Salir
-            Eligre una opción: """;
+            Elige una opción: """;
 
     // Scanner, se comparte entre métodos
     private static Scanner SC;
-    //private static final Scanner SC = new Scanner(System.in);
     private static String sala;  // 48 caracteres: '-' libre, 'X' ocupada
 
-    // Variables auxiliares para comunicar el resultado de la compra.
+    // Variables auxiliares para comunicar el resultado de las compras.
     private static  int entradasVendidas = 0;
     private static int recaudacion = 0;
 
@@ -76,12 +78,13 @@ public class CineDAW {
                     comprarEntrada();
                     break;
                 case 3:
-                    //TODO Estadisticas
-                case 0:
-                    System.out.println("Ha salido del cine!");
+                    mostrarEstadisticas();
                     break;
-                case OPCION_NO_VALIDA:
-                    break; // Gestiona entrada inválida.
+                case 0:
+                    salirMenu();
+                    break;
+                case OPCION_NO_VALIDA: // Gestiona entrada inválida.
+                    break;
                 default:
                     System.out.println("Opción no válida");
             }
@@ -164,11 +167,11 @@ public class CineDAW {
         return (fila - PRIMERA_FILA) * BUTACAS_POR_FILA + (butaca - 1);
     }
     /** Marca una butaca como ocupada */
-    static void ocuparButaca(int posicion) {
+    private static void ocuparButaca(int posicion) {
         sala = sala.substring(0, posicion) + OCUPADA + sala.substring(posicion + 1); // Al tratarse de un string, no se modifica el string, si no que se crea uno nuevo cada vez que cambia algo.
     }
     /** Convierte céntimos a string en euros: 150 -> "1,50 €". */
-    static String formatearEuros(int centimos) {
+    private static String formatearEuros(int centimos) {
         int euros = centimos / CENTIMOS_POR_EURO;
         int resto = centimos % CENTIMOS_POR_EURO;
         return euros + "," + (resto < LIMITE_UN_DIGITO ? "0" : "") + resto + " €";
@@ -206,8 +209,8 @@ public class CineDAW {
     /* ========================= FIN OPCION 1 (Ver sala) ============================ */
 
     /* ========================= OPCION 2 (Comprar entrada) ============================ */
-    static void comprarEntrada() {
-        // 1. Sala completa: no queda ninguna butaca libre
+    private static void comprarEntrada() {
+        // 1. Aviso de sala completa en caso de que no quede ninguna butaca libre
         if (sala.indexOf(LIBRE) == -1) {
             System.out.println("La sala está completa. No quedan butacas libres.");
             return;
@@ -218,7 +221,7 @@ public class CineDAW {
         int butaca = pedirEntero("Butaca (1-" + BUTACAS_POR_FILA + "): ", 1, BUTACAS_POR_FILA);
         int posicion = calcularPosicionButaca(fila, butaca);
 
-        // 4. Butaca ocupada: se avisa y se vuelve al menú
+        // 4. Butaca ocupada: salta aviso y se vuelve al menú
         if (sala.charAt(posicion) == OCUPADA) {
             System.out.println("La butaca " + fila + butaca + " ya está ocupada.");
             sugerirButacaLibre(fila);
@@ -241,11 +244,11 @@ public class CineDAW {
         }
         System.out.println("Tarifa: " + tarifa);
 
-        // 6. Ajuste según el día de la semana
+        // 6. Ajuste de precio según el día de la semana
         int dia = pedirEntero("Día de la semana (1=lunes ... 7=domingo): ", LUNES, DOMINGO);
         precio = aplicarDiaSemana(precio, dia);
 
-        // 7. Total a pagar
+        // 7. Muestra la tarifa aplicada y el total a pagar con formato de euros.
         System.out.println("Total a pagar: " + formatearEuros(precio));
 
         // 8. Ocupar la butaca y actualizar contadores
@@ -259,14 +262,14 @@ public class CineDAW {
      * Aplica el ajuste de precio según el día de la semana.
      * Los casos que comparten código se agrupan sin break entre ellos.
      */
-    static int aplicarDiaSemana(int precio, int dia) {
+    private static int aplicarDiaSemana(int precio, int dia) {
         int total = precio;
         switch (dia) {
             case LUNES:
             case MARTES:
             case JUEVES:
             case VIERNES:
-                // De lunes a viernes (salvo miércoles) se mantiene el precio
+                // De lunes a viernes (exceoto miércoles) se mantiene el precio
                 break;
             case MIERCOLES:
                 // Día del espectador: 30 % de descuento, calculado con Math.round y casting a int
@@ -288,7 +291,7 @@ public class CineDAW {
     }
 
     /** Ampliación opcional | Sugiere la primera butaca libre de la fila indicada. */
-    static void sugerirButacaLibre(char fila) {
+    private static void sugerirButacaLibre(char fila) {
         int inicioFila = (fila - PRIMERA_FILA) * BUTACAS_POR_FILA;
         int finFila = inicioFila + BUTACAS_POR_FILA; // primera posición de la fila siguiente
         int libre = sala.indexOf(LIBRE, inicioFila);
@@ -299,5 +302,37 @@ public class CineDAW {
             System.out.println("No quedan butacas libres en la fila " + fila + ".");
         }
     }
+    /* ========================= FIN OPCION 2 (Comprar entrada) ============================ */
 
+    /* ========================= OPCION 3 (Estadísticas) ============================ */
+    private static void mostrarEstadisticas() {
+        System.out.println("Entradas vendidas: " + ternariaEntradas());
+        System.out.println("Recaudación: " + formatearEuros(recaudacion));
+
+        // Contamos las butacas ocupadas, con continue saltamos las libres
+        int ocupadas = 0;
+        for (int i = 0; i < TOTAL_BUTACAS; i++) {
+            if (sala.charAt(i) == LIBRE) {
+                continue;
+            }
+            ocupadas++;
+        }
+        int libres = TOTAL_BUTACAS - ocupadas;
+        System.out.println("Butacas ocupadas: " + ocupadas + " | libres: " + libres);
+
+        // Devuelve estadistica de ocupación con dos decimales, calculado con casting a double y Math.round
+        double porcentaje = Math.round((double) ocupadas / TOTAL_BUTACAS * PORCENTAJE_TOTAL * PORCENTAJE_TOTAL) / PORCENTAJE_TOTAL;
+        System.out.println("Ocupación: " + porcentaje + " %");
+    }
+
+    /** Uso de ternario, devuelve 1 entrada o N entradas como String según el numero de entradas vendidas */
+    private static String ternariaEntradas() {
+        return entradasVendidas == 1 ? "1 entrada" : entradasVendidas + " entradas";
+    }
+    /* ========================= FIN OPCION 3 (Estadísticas) ============================ */
+
+    /* ========================= OPCION 0 (Salir) ============================ */
+    private static void salirMenu() {
+        System.out.println("¡Hasta pronto! Hoy se han vendido " + ternariaEntradas() + ".");
+    }
 }
