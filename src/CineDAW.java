@@ -32,7 +32,7 @@ public class CineDAW {
     private static final int EDAD_LIMITE_INFANTIL = 12;
     private static final int EDAD_MINIMA_SENIOR = 65;
 
-    // Constantes de dias de la semaana
+    // Constantes de dias de la semana
     private static final int LUNES = 1;
     private static final int MARTES = 2;
     private static final int MIERCOLES = 3;
@@ -83,13 +83,11 @@ public class CineDAW {
                 case 0:
                     salirMenu();
                     break;
-                case OPCION_NO_VALIDA: // Gestiona entrada inválida.
-                    break;
                 default:
                     System.out.println("Opción no válida");
             }
         } while (opcion != 0);
-        SC.close();
+        SC.close(); // Cerramos Scanner
     }
 
     /**
