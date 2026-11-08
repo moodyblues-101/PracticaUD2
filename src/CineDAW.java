@@ -2,90 +2,104 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class CineDAW {
+
+    // Declaramos constantes de la sala
+    private static final int FILAS = 6;
+    private static final int BUTACAS_POR_FILA = 8;
+    private static final int BUTACAS_ANTES_PASILLO = 4;
+    private static final char PRIMERA_FILA = 'A';
+    private static final char LIBRE = '-';
+    private static final char OCUPADA = 'X';
+
+    private static final int OPCION_INVALIDA = -1;
+
+    private static final String MENU = """
+            ===== CineDAW =====
+            1. Ver Sala
+            2. Comprar entrada
+            3. Estadísticas
+            0. Salir
+            Eligre una opción: """;
+
+    // Scanner visible desde todos los métodos.
+    private static final Scanner SC = new Scanner(System.in);
+
     static void main(String[] args) {
-
-        Scanner sc = new Scanner(System.in);
+        String sala = construirSala();
         int opcion;
-        final int FILAS = 6;
-        final int BUTACAS_POR_FILA = 8;
-        String sala = "";
-        dibujarSala(sala);
-        //boolean ocupada = sala.charAt(posicion) == 'X';                       // consultar
-        //sala = sala.substring(0, posicion) + 'X' + sala.substring(posicion + 1);  // ocupar
 
-
-        // Ver sala
-        //for (int fila = 0; fila < 6; fila++) {
-        //    for (int butaca = 1; butaca <= BUTACAS_POR_FILA; butaca++) {
-        //        // Posición de una butaca dentro del String: A1 -> 0, A2 -> 1 ... F8 -> 47
-        //        int posicion = (fila - 'A') * BUTACAS_POR_FILA + (butaca - 1);
-        //        System.out.print(sala.charAt(posicion) + " ");
-        //    }
-        //    System.out.println();
-        //}
-
-        // Dibujamos menú
         do {
-            System.out.println("----- CineDAW -----");
-            System.out.println("1· Ver sala");
-            System.out.println("2· Comprar entrada");
-            System.out.println("3· Estadísticas");
-            System.out.println("0· Salir");
-            System.out.println("Elige una opción: ");
-            //TODO: try catch
-            try {
-                opcion = sc.nextInt();
-            } catch (InputMismatchException e) {
-                System.out.println("Opción no válida");
-                sc.nextLine(); // Limpiar buffer
-                opcion = -1; // Asignar un valor inválido para continuar el bucle
-            }
+            System.out.print(MENU);
+            opcion = leerOpcion();
 
             switch (opcion) {
                 case 1:
-                    //TODO: Ver sala
+                    dibujarSala(sala);
                     break;
                 case 2:
-                    //TODO: Comprar entrada
-                    break;
+                    //TODO Comprar entrada
                 case 3:
-                    //TODO: Estadísticas
-                    break;
+                    //TODO Estadisticas
                 case 0:
-                    System.out.println("Ha salido del menú.");
+                    System.out.println("Ha salido del cine!");
                     break;
-                case -1:
-                    // Entrada incorrecta si se produce la excepción InputMismatchException.
-                    break;
+                case OPCION_INVALIDA:
+                    break; // Gestiona entrada inválida.
                 default:
-                    System.out.println("Opción no válida.");
+                    System.out.println("Opción no válida");
             }
         } while (opcion != 0);
-        sc.close();
+        SC.close();
+    }
+    // Construye la sala con las butacas libres (-)
+    private static String construirSala() {
+        String sala = "";
+        for (int i = 1; i <= FILAS * BUTACAS_POR_FILA ; i++) {
+            sala += LIBRE; // (-)
+        }
+        return sala;
+    }
+    // Lee la opción seleccionada en el menú. Si se recibe texto devuelve OPCION_INVALIDA (-1)
+    private static int leerOpcion() {
+        int opcion;
+        try {
+            opcion = SC.nextInt();
+        } catch (InputMismatchException e) {
+            System.out.println("Opción no válida");
+            opcion = OPCION_INVALIDA;
+        }
+        SC.nextLine(); // Limpiamos buffer
+        return opcion;
+    }
+    private static int posicionButaca(char fila, int butaca) {
+        return (fila - PRIMERA_FILA) * BUTACAS_POR_FILA + (butaca -1);
     }
 
-    static void dibujarSala(String sala) {
-        final int FILAS = 6;
-        final int BUTACAS_POR_FILA = 8;
-        final int BUTACAS_ANTES_PASILLO = 4;
-        // Cabecera: bucle simple, NO anidado
-        System.out.print("   ");
+    private static void dibujarSala(String sala) {
+        System.out.println("        P A N T A L L A");
+        System.out.print("    "); // Cabecera butacas (4 esp.)
         for (int butaca = 1; butaca <= BUTACAS_POR_FILA; butaca++) {
             System.out.print(butaca + " ");
+            // Pasillo entre butacas (4 esp.)
+            if (butaca == BUTACAS_ANTES_PASILLO) {
+                System.out.print("    ");
+            }
         }
         System.out.println();
 
-        // Dibujamos sala de cine
-        for (char fila = 'A'; fila <= 'A' + FILAS; fila++) {
-            System.out.print(" " + fila + " ");                      // letra de la fila
+        for (char fila = PRIMERA_FILA; fila < PRIMERA_FILA + FILAS; fila++) {
+            System.out.print(" " + fila + "  "); // Espacio entre fila y butacas (2 esp.)
             for (int butaca = 1; butaca <= BUTACAS_POR_FILA; butaca++) {
-                int posicion = (fila - 'A') * BUTACAS_POR_FILA + (butaca - 1);
-                System.out.print(sala.charAt(posicion) + " ");
+                System.out.print(sala.charAt(posicionButaca(fila, butaca)) + " ");
+                // Pasillo entre butacas (4 esp.)
                 if (butaca == BUTACAS_ANTES_PASILLO) {
-                    System.out.print("  ");
+                    System.out.print("    ");
                 }
-                System.out.println();
             }
+            System.out.println();
         }
+        System.out.println(" (" + LIBRE + " libre, " + OCUPADA + " ocupada)");
     }
+
+
 }
