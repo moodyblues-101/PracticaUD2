@@ -5,6 +5,7 @@ import java.util.Scanner;
  * Programa CineDAW: taquilla de una sala de cine
  * Permite ver el estado de la sala (butacas vacias o llenas), comprar entradas aplicando
  * tarifas distintas por edad y por día de la semana, y consultar estadísticas de venta.
+ *
  * @author Joel C.G.
  */
 public class CineDAW {
@@ -56,15 +57,15 @@ public class CineDAW {
             Elige una opción: """;
 
     // Scanner, se comparte entre métodos
-    private static Scanner SC;
+    private static Scanner sc;
     private static String sala;  // 48 caracteres: '-' libre, 'X' ocupada
 
     // Variables auxiliares para comunicar el resultado de las compras.
-    private static  int entradasVendidas = 0;
+    private static int entradasVendidas = 0;
     private static int recaudacion = 0;
 
     static void main(String[] args) {
-        SC = new Scanner(System.in);
+        sc = new Scanner(System.in);
         sala = construirSalaVacia();
 
         int opcion;
@@ -87,7 +88,7 @@ public class CineDAW {
                     System.out.println("Opción no válida");
             }
         } while (opcion != 0);
-        SC.close(); // Cerramos Scanner
+        sc.close(); // Cerramos Scanner
     }
 
     /**
@@ -110,12 +111,12 @@ public class CineDAW {
         System.out.println();
         System.out.print(MENU);
         try {
-            opcion = SC.nextInt();
+            opcion = sc.nextInt();
         } catch (InputMismatchException e) {
             System.out.println("Opción no válida");
             opcion = OPCION_NO_VALIDA; // -1
         }
-        SC.nextLine(); // Limpiamos buffer
+        sc.nextLine(); // Limpiamos buffer
         return opcion;
     }
 
@@ -128,7 +129,7 @@ public class CineDAW {
         do {
             System.out.print(mensaje);
             try {
-                valor = SC.nextInt();
+                valor = sc.nextInt();
                 valido = valor >= minimo && valor <= maximo;
                 if (!valido) {
                     System.out.println("Debe ser un número entre " + minimo + " y " + maximo + ".");
@@ -138,7 +139,7 @@ public class CineDAW {
                 valor = minimo - 1;
                 valido = false;
             }
-            SC.nextLine(); // limpia el buffer tras nextInt() o tras la recoger la excepción
+            sc.nextLine(); // limpia el buffer tras nextInt() o tras la recoger la excepción
         } while (!valido);
         return valor;
     }
@@ -149,26 +150,34 @@ public class CineDAW {
      */
     private static char pedirFila() {
         System.out.print("Fila (" + PRIMERA_FILA + "-" + ULTIMA_FILA + "): ");
-        String filaTexto = SC.nextLine().trim().toUpperCase();
+        String filaTexto = sc.nextLine().trim().toUpperCase();
         while (filaTexto.length() != 1
                 || filaTexto.charAt(0) < PRIMERA_FILA
                 || filaTexto.charAt(0) > ULTIMA_FILA) {
             System.out.println("Fila no válida. Debe ser una letra entre " + PRIMERA_FILA + " y " + ULTIMA_FILA + ".");
             System.out.print("Fila (" + PRIMERA_FILA + "-" + ULTIMA_FILA + "): ");
-            filaTexto = SC.nextLine().trim().toUpperCase();
+            filaTexto = sc.nextLine().trim().toUpperCase();
         }
         return filaTexto.charAt(0);
     }
 
-     /** Posición de la butaca dentro del string (A1 -> 0 ... F8 -> 47) */
+    /**
+     * Posición de la butaca dentro del string (A1 -> 0 ... F8 -> 47)
+     */
     private static int calcularPosicionButaca(char fila, int butaca) {
         return (fila - PRIMERA_FILA) * BUTACAS_POR_FILA + (butaca - 1);
     }
-    /** Marca una butaca como ocupada */
+
+    /**
+     * Marca una butaca como ocupada
+     */
     private static void ocuparButaca(int posicion) {
         sala = sala.substring(0, posicion) + OCUPADA + sala.substring(posicion + 1); // Al tratarse de un string, no se modifica el string, si no que se crea uno nuevo cada vez que cambia algo.
     }
-    /** Convierte céntimos a string en euros: 150 -> "1,50 €". */
+
+    /**
+     * Convierte céntimos a string en euros: 150 -> "1,50 €".
+     */
     private static String formatearEuros(int centimos) {
         int euros = centimos / CENTIMOS_POR_EURO;
         int resto = centimos % CENTIMOS_POR_EURO;
@@ -176,7 +185,10 @@ public class CineDAW {
     }
 
     /* ========================= OPCION 1 (Ver sala) ============================ */
-    /** Dibuja la sala entera */
+
+    /**
+     * Dibuja la sala entera
+     */
     private static void dibujarSala() {
         System.out.println();
         System.out.println("        P A N T A L L A");
@@ -288,7 +300,9 @@ public class CineDAW {
         return total;
     }
 
-    /** Ampliación opcional | Sugiere la primera butaca libre de la fila indicada. */
+    /**
+     * Ampliación opcional | Sugiere la primera butaca libre de la fila indicada.
+     */
     private static void sugerirButacaLibre(char fila) {
         int inicioFila = (fila - PRIMERA_FILA) * BUTACAS_POR_FILA;
         int finFila = inicioFila + BUTACAS_POR_FILA; // primera posición de la fila siguiente
@@ -323,7 +337,9 @@ public class CineDAW {
         System.out.println("Ocupación: " + porcentaje + " %");
     }
 
-    /** Uso de ternario, devuelve 1 entrada o N entradas como String según el numero de entradas vendidas */
+    /**
+     * Uso de ternario, devuelve 1 entrada o N entradas como String según el numero de entradas vendidas
+     */
     private static String ternariaEntradas() {
         return entradasVendidas == 1 ? "1 entrada" : entradasVendidas + " entradas";
     }
