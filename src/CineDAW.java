@@ -103,7 +103,7 @@ public class CineDAW {
     }
 
     /**
-     * Imprime el MENU en pantalla y lee la opción seleccionada en el menú.
+     * Imprime el MENU en pantalla y lee la opción seleccionada.
      * Si se recibe texto devuelve OPCION_NO_VALIDA (-1)
      */
     private static int leerOpcionMenu() {
@@ -113,7 +113,6 @@ public class CineDAW {
         try {
             opcion = sc.nextInt();
         } catch (InputMismatchException e) {
-            System.out.println("Opción no válida");
             opcion = OPCION_NO_VALIDA; // -1
         }
         sc.nextLine(); // Limpiamos buffer
@@ -172,7 +171,9 @@ public class CineDAW {
      * Marca una butaca como ocupada
      */
     private static void ocuparButaca(int posicion) {
-        sala = sala.substring(0, posicion) + OCUPADA + sala.substring(posicion + 1); // Al tratarse de un string, no se modifica el string, si no que se crea uno nuevo cada vez que cambia algo.
+        sala = sala.substring(0, posicion) + OCUPADA + sala.substring(posicion + 1);
+        // Al tratarse de un string, no se modifica el string,
+        // si no que se crea uno nuevo cada vez que cambia algo.
     }
 
     /**
@@ -279,7 +280,7 @@ public class CineDAW {
             case MARTES:
             case JUEVES:
             case VIERNES:
-                // De lunes a viernes (exceoto miércoles) se mantiene el precio
+                // De lunes a viernes (excepto miércoles) se mantiene el precio
                 break;
             case MIERCOLES:
                 // Día del espectador: 30 % de descuento, calculado con Math.round y casting a int
